@@ -27,6 +27,14 @@ def validation_exception_handler(request: Request, exception: RequestValidationE
             content={"detail": exception.errors()},
         )
 
+@app.exception_handler(HTTPException)
+def general_HTTP_exception_handler(request: Request, exception: HTTPException):
+    message = (exception.detail if exception.detail else "an error occurred, try later")
+    if request.url.path.startswith("/problems"):
+        return JSONResponse(
+            status_code=exception.status_code,
+            content={"detail": message},
+        )
 @app.get("/problems/stats", response_model=StatsResponse)  
 def problem_stats(db:Annotated[Session, Depends(get_db)]):
     result = db.execute(select(models.Problem))
